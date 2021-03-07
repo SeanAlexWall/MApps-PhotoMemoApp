@@ -1,3 +1,7 @@
+import 'package:PhotoMemoApp/controller/firebasecontroller.dart';
+import 'package:PhotoMemoApp/screen/myview/mydialog.dart';
+import 'package:PhotoMemoApp/screen/userhome_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class SignInScreen extends StatefulWidget{
@@ -94,11 +98,30 @@ class _Controller{
     password = value;
   }
 
-  void signIn(){
+  Future<void> signIn() async {
     if(!state.formKey.currentState.validate()) return;
 
     state.formKey.currentState.save();
 
-    print("Email: $email Password: $password");
+    User user;
+    try{
+      user = await FirebaseController.signIn(email: email, password: password);
+    }catch(e){
+      MyDialog.info(
+        context: state.context,
+        title: 'Sign In Error',
+        content: e.toString(),
+      );
+      return;
+    }
+
+    Navigator.pushNamed(
+      state.context, 
+      UserHomeScreen.routeName, 
+      arguments: {
+        'user' : user
+      },
+    );
   }
+
 }
