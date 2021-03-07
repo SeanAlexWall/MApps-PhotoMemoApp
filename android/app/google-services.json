@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "991208417441",
+    "project_id": "cmsc4303-seanw-photomemoapp",
+    "storage_bucket": "cmsc4303-seanw-photomemoapp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:991208417441:android:19b79271c913e2af64a8e0",
+        "android_client_info": {
+          "package_name": "edu.uco.swall6.MApps.PhotoMemoApp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "991208417441-kphjf8q829aclga1dv0uvmpritmv9ube.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBuzKZNZSUWjXxNmBMA2CTUdQOVfRDNskw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "991208417441-kphjf8q829aclga1dv0uvmpritmv9ube.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
