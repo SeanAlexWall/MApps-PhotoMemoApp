@@ -1,3 +1,6 @@
+import 'package:PhotoMemoApp/model/constant.dart';
+import 'package:PhotoMemoApp/screen/addphotomemo_screen.dart';
+import 'package:PhotoMemoApp/screen/detailedview_screen.dart';
 import 'package:PhotoMemoApp/screen/signin_screen.dart';
 import 'package:PhotoMemoApp/screen/userhome_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -14,6 +17,7 @@ class PhotoMemoApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: Constant.DEV,
       title: 'Flutter Demo',
       theme: ThemeData(
         // This is the theme of your application.
@@ -36,6 +40,8 @@ class PhotoMemoApp extends StatelessWidget {
       routes: {
         SignInScreen.routeName : (context) => SignInScreen(),
         UserHomeScreen.routeName : (context) => UserHomeScreen(),
+        AddPhotoMemoScreen.routeName : (context) => AddPhotoMemoScreen(),
+        DetailedViewScreen.routeName : (context) => DetailedViewScreen(),
       },
     );
   }

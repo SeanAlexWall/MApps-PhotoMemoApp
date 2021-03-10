@@ -1,4 +1,6 @@
 import 'package:PhotoMemoApp/controller/firebasecontroller.dart';
+import 'package:PhotoMemoApp/model/constant.dart';
+import 'package:PhotoMemoApp/model/photomemo.dart';
 import 'package:PhotoMemoApp/screen/myview/mydialog.dart';
 import 'package:PhotoMemoApp/screen/userhome_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -104,9 +106,12 @@ class _Controller{
     state.formKey.currentState.save();
 
     User user;
+    MyDialog.circularProgressStart(state.context);
+
     try{
       user = await FirebaseController.signIn(email: email, password: password);
     }catch(e){
+      MyDialog.circularProgressStop(state.context);
       MyDialog.info(
         context: state.context,
         title: 'Sign In Error',
@@ -115,13 +120,28 @@ class _Controller{
       return;
     }
 
-    Navigator.pushNamed(
-      state.context, 
-      UserHomeScreen.routeName, 
-      arguments: {
-        'user' : user
-      },
-    );
+    try{
+      List<PhotoMemo> photoMemoList = 
+        await FirebaseController.getPhotoMemoList(email: user.email);
+      MyDialog.circularProgressStop(state.context);
+      Navigator.pushNamed(
+        state.context, 
+        UserHomeScreen.routeName, 
+        arguments: {
+          Constant.ARG_USER : user,
+          Constant.ARG_PHOTOMEMOLIST : photoMemoList,
+        },
+      );
+    } catch(e){
+      MyDialog.circularProgressStop(state.context);
+      MyDialog.info(
+        context: state.context,
+        title: "Firestore getPhotoMemoList error",
+        content: "$e",
+      );
+    }
+
+
   }
 
 }

@@ -1,4 +1,9 @@
 import 'package:PhotoMemoApp/controller/firebasecontroller.dart';
+import 'package:PhotoMemoApp/model/constant.dart';
+import 'package:PhotoMemoApp/model/photomemo.dart';
+import 'package:PhotoMemoApp/screen/addphotomemo_screen.dart';
+import 'package:PhotoMemoApp/screen/detailedview_screen.dart';
+import 'package:PhotoMemoApp/screen/myview/myImage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -14,6 +19,8 @@ class UserHomeScreen extends StatefulWidget{
 class UserHomeState extends State<UserHomeScreen> {
   _Controller con;
   User user;
+  List<PhotoMemo> photoMemoList;
+  
 
   @override
   void initState() {
@@ -29,27 +36,65 @@ class UserHomeState extends State<UserHomeScreen> {
   @override
   Widget build(BuildContext context) {
     Map args = ModalRoute.of(context).settings.arguments;
-    user ??= args['user'];
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("User Home"),
-      ),
-      drawer: Drawer(
-        child: ListView(
-          children: [
-            UserAccountsDrawerHeader(
-              accountName: Text(user.displayName ?? 'N/A' ), 
-              accountEmail: Text(user.email),
-            ),
-            ListTile(
-              leading: Icon(Icons.exit_to_app),
-              title: Text("Sign Out"),
-              onTap: con.signOut,
-            ),
-          ],
+    user ??= args[Constant.ARG_USER];
+    photoMemoList ??= args[Constant.ARG_PHOTOMEMOLIST];
+    return WillPopScope(
+      onWillPop: () => Future.value(false),
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text("User Home"),
         ),
+        drawer: Drawer(
+          child: ListView(
+            children: [
+              UserAccountsDrawerHeader(
+                accountName: Text(user.displayName ?? 'N/A' ), 
+                accountEmail: Text(user.email),
+              ),
+              ListTile(
+                leading: Icon(Icons.exit_to_app),
+                title: Text("Sign Out"),
+                onTap: con.signOut,
+              ),
+            ],
+          ),
+        ),
+        floatingActionButton: FloatingActionButton(
+          child: Icon(Icons.add),
+          onPressed: con.addButton,
+        ),
+        body: (photoMemoList.length == 0)? 
+          Text(
+            "No PhotoMemos Found!",
+            style: Theme.of(context).textTheme.headline5,
+            )
+          : ListView.builder(
+            itemCount: photoMemoList.length,
+            itemBuilder: (BuildContext context, int index) => ListTile(
+              leading: MyImage.network(
+                url: photoMemoList[index].photoURL,
+                context: context,
+              ),
+              title: Text(
+                photoMemoList[index].title,
+              ),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    (photoMemoList[index].memo.length >= 20)? 
+                      photoMemoList[index].memo.substring(0, 20) + "..."
+                      : photoMemoList[index].memo,
+                  ), 
+                  Text("Created By ${photoMemoList[index].createdBy}"),
+                  Text("Shared With ${photoMemoList[index].sharedWith}"),
+                  Text("Updated At ${photoMemoList[index].timestamp}"),
+                ],
+              ),
+              onTap: () => con.onTap(index),
+            ),
+          ),
       ),
-      body: Text("User Home ${user.email}"),
     );
   }
 
@@ -59,6 +104,18 @@ class _Controller {
   UserHomeState state;
 
   _Controller(this.state);
+
+  void addButton() async {
+    await Navigator.pushNamed(
+      state.context, 
+      AddPhotoMemoScreen.routeName, 
+      arguments: {
+        Constant.ARG_USER : state.user,
+        Constant.ARG_PHOTOMEMOLIST : state.photoMemoList,
+        },
+    );
+    state.render((){}); //refresh
+  }
 
   void signOut() async{
     try{
@@ -70,5 +127,15 @@ class _Controller {
 
     Navigator.of(state.context).pop();
     Navigator.of(state.context).pop();
+  }
+
+  void onTap(int index) async {
+    await Navigator.pushNamed(
+      state.context, DetailedViewScreen.routeName,
+      arguments: {
+        Constant.ARG_USER : state.user,
+        Constant.ARG_ONE_PHOTOMEMO : state.photoMemoList[index],
+      },
+    );
   }
 }
