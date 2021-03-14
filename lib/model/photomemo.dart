@@ -34,6 +34,39 @@ class PhotoMemo {
     this.imageLabels ??= [];
   }
 
+  PhotoMemo.clone(PhotoMemo p){
+    this.docId = p.docId;
+    this.createdBy = p.createdBy;
+    this.title = p.title;
+    this.memo = p.memo;
+    this.photoFileName = p.photoFileName; 
+    this.photoURL = p.photoURL;
+    this.timestamp = p.timestamp;
+
+    this.sharedWith = [];
+    this.sharedWith.addAll(p.sharedWith);
+
+    this.imageLabels = [];
+    this.imageLabels.addAll(p.imageLabels);
+  }
+
+  void assign(PhotoMemo p){
+    this.docId = p.docId;
+    this.createdBy = p.createdBy;
+    this.title = p.title;
+    this.memo = p.memo;
+    this.photoFileName = p.photoFileName; 
+    this.photoURL = p.photoURL;
+    this.timestamp = p.timestamp;
+
+
+    this.sharedWith = [];
+    this.sharedWith.addAll(p.sharedWith);
+
+    this.imageLabels = [];
+    this.imageLabels.addAll(p.imageLabels);
+  }
+
   Map<String, dynamic> serialize(){
     return <String, dynamic>{
       TITLE : this.title,
