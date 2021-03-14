@@ -132,6 +132,7 @@ class _Controller {
 
     try{
       await FirebaseController.createAccount(email: email, password: password);
+      Navigator.pop(state.context);
       MyDialog.info(
         context: state.context,
         title: "Account Created!",
