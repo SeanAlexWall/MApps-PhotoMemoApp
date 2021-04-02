@@ -1,9 +1,12 @@
 import 'package:PhotoMemoApp/controller/firebasecontroller.dart';
+import 'package:PhotoMemoApp/model/comment.dart';
 import 'package:PhotoMemoApp/model/constant.dart';
 import 'package:PhotoMemoApp/model/photomemo.dart';
 import 'package:PhotoMemoApp/screen/addphotomemo_screen.dart';
+import 'package:PhotoMemoApp/screen/comments_screen.dart';
 import 'package:PhotoMemoApp/screen/detailedview_screen.dart';
 import 'package:PhotoMemoApp/screen/myview/myImage.dart';
+import 'package:PhotoMemoApp/screen/myview/myTextTheme.dart';
 import 'package:PhotoMemoApp/screen/myview/mydialog.dart';
 import 'package:PhotoMemoApp/screen/sharedwith_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -140,6 +143,54 @@ class UserHomeState extends State<UserHomeScreen> {
                     Text("Created By ${photoMemoList[index].createdBy}"),
                     Text("Shared With ${photoMemoList[index].sharedWith}"),
                     Text("Updated At ${photoMemoList[index].timestamp}"),
+                    Row(
+                      children: [
+                        FlatButton(
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Positioned(
+                                child: Icon(
+                                  Icons.chat_bubble,
+                                ),
+                              ),
+                              Positioned(
+                                top: 0,
+                                child: Text(
+                                  "${photoMemoList[index].numComments}",
+                                  style: (photoMemoList[index].numComments > 0)?
+                                    CustomTextThemes.alert1(context)
+                                    : Theme.of(context).textTheme.subtitle1,
+                                ),
+                              )
+                            ]
+                          ),
+                          onPressed: () => con.comments(index),
+                        ),
+                        SizedBox(width: 10.0),
+                        FlatButton(
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Positioned(
+                                child: Icon(
+                                  Icons.favorite_border,
+                                ),
+                              ),
+                              Positioned(
+                                child: Text(
+                                  "0",
+                                  // style: (photoMemoList[index].numComments > 0)?
+                                  //   CustomTextThemes.alert1(context)
+                                  //   : Theme.of(context).textTheme.subtitle1,
+                                ),
+                              )
+                            ]
+                          ),
+                          onPressed: () => { print("Like") },
+                        ),
+                      ],
+                    ),
                   ],
                 ),
                 onTap: () => con.onTap(index),
@@ -282,4 +333,29 @@ class _Controller {
       );
     }
   }
+
+  void comments(int index) async {
+    MyDialog.circularProgressStart(state.context);
+    try{
+      List<Comment> commentList = 
+        await FirebaseController.getComments(state.photoMemoList[index].docId);
+      MyDialog.circularProgressStop(state.context);
+      Navigator.of(state.context).pushNamed(
+        CommentsScreen.routeName,
+        arguments: {
+          Constant.ARG_USER : state.user,
+          Constant.ARG_ONE_PHOTOMEMO : state.photoMemoList[index],
+          Constant.ARG_COMMENTLIST : commentList,
+        },
+      );
+    }catch (e){
+      MyDialog.circularProgressStop(state.context);
+      MyDialog.info(
+        context: state.context, 
+        title: "getComments error", 
+        content: "$e",
+      );
+    }  
+  }//comments
+
 }

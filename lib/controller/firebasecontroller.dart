@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:PhotoMemoApp/model/comment.dart';
 import 'package:PhotoMemoApp/model/constant.dart';
 import 'package:PhotoMemoApp/model/photomemo.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -45,23 +46,23 @@ class FirebaseController {
 
   static Future<String> addPhotoMemo(PhotoMemo photoMemo)async{
     var ref = await FirebaseFirestore.instance
-          .collection(Constant.PHOTOMEMO_COLLECTION)
-          .add(photoMemo.serialize());
+      .collection(Constant.PHOTOMEMO_COLLECTION)
+      .add(photoMemo.serialize());
     return ref.id;
   }
 
   static Future<void> updatePhotoMemo(String docId, Map<String, dynamic> updateInfo) async{
     await FirebaseFirestore.instance
-        .collection(Constant.PHOTOMEMO_COLLECTION)
-        .doc(docId)
-        .update(updateInfo);
+      .collection(Constant.PHOTOMEMO_COLLECTION)
+      .doc(docId)
+      .update(updateInfo);
   }
 
   static Future<List<PhotoMemo>> getPhotoMemoList({@required String email}) async{
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection(Constant.PHOTOMEMO_COLLECTION)
-          .where(PhotoMemo.CREATED_BY, isEqualTo: email)
-          .orderBy(PhotoMemo.TIMESTAMP, descending: true)
-          .get();
+      .where(PhotoMemo.CREATED_BY, isEqualTo: email)
+      .orderBy(PhotoMemo.TIMESTAMP, descending: true)
+      .get();
 
     var result = <PhotoMemo>[];
     querySnapshot.docs.forEach((doc){
@@ -93,10 +94,10 @@ class FirebaseController {
 
   static Future<List<PhotoMemo>> getPhotoMemoSharedWithMe({@required String email}) async{
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-          .collection(Constant.PHOTOMEMO_COLLECTION)
-          .where(PhotoMemo.SHARED_WITH, arrayContains: email)
-          .orderBy(PhotoMemo.TIMESTAMP, descending: true)
-          .get();
+      .collection(Constant.PHOTOMEMO_COLLECTION)
+      .where(PhotoMemo.SHARED_WITH, arrayContains: email)
+      .orderBy(PhotoMemo.TIMESTAMP, descending: true)
+      .get();
     List<PhotoMemo> result =  <PhotoMemo>[];
     querySnapshot.docs.forEach((doc) {
       result.add(PhotoMemo.deserialize(doc.data(), doc.id));
@@ -116,16 +117,57 @@ class FirebaseController {
     @required String createdBy, 
     @required List<String> searchLabels}) async{
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-          .collection(Constant.PHOTOMEMO_COLLECTION)
-          .where(PhotoMemo.CREATED_BY, isEqualTo: createdBy)
-          .where(PhotoMemo.IMAGE_LABELS, arrayContainsAny: searchLabels)
-          .orderBy(PhotoMemo.TIMESTAMP, descending: true)
-          .get();
+        .collection(Constant.PHOTOMEMO_COLLECTION)
+        .where(PhotoMemo.CREATED_BY, isEqualTo: createdBy)
+        .where(PhotoMemo.IMAGE_LABELS, arrayContainsAny: searchLabels)
+        .orderBy(PhotoMemo.TIMESTAMP, descending: true)
+        .get();
       var results = <PhotoMemo>[];
       querySnapshot.docs.forEach((doc) {
         results.add(PhotoMemo.deserialize(doc.data(), doc.id));
       });
 
       return results;
+  }
+
+  static Future<List<Comment>> getComments(String docId) async {
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+      .collection(Constant.PHOTOMEMO_COLLECTION)
+      .doc(docId)
+      .collection(Constant.COMMENT_COLLECTION)
+      .orderBy(PhotoMemo.TIMESTAMP, descending: true)
+      .get();
+    var results = <Comment>[];
+    querySnapshot.docs.forEach((doc) {
+      results.add(Comment.deserialize(doc.data(), doc.id));
+    });
+    return results;
+  }
+
+  static Future<String> addComment(Comment comment)async{
+    var ref = await FirebaseFirestore.instance
+      .collection(Constant.PHOTOMEMO_COLLECTION)
+      .doc(comment.photoMemoId)
+      .collection(Constant.COMMENT_COLLECTION)
+      .add(comment.serialize());
+    return ref.id;
+  }
+
+  static Future<void> deleteComment(Comment c) async {
+    await FirebaseFirestore.instance
+      .collection(Constant.PHOTOMEMO_COLLECTION)
+      .doc(c.photoMemoId)
+      .collection(Constant.COMMENT_COLLECTION)
+      .doc(c.docId)
+      .delete();
+  }
+
+  static Future<void> updateComment(String photoMemoId, String docId, Map<String, dynamic> updateInfo) async{
+    await FirebaseFirestore.instance
+      .collection(Constant.PHOTOMEMO_COLLECTION)
+      .doc(photoMemoId)
+      .collection(Constant.COMMENT_COLLECTION)
+      .doc(docId)
+      .update(updateInfo);
   }
 }

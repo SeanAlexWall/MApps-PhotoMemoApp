@@ -1,6 +1,10 @@
+import 'package:PhotoMemoApp/controller/firebasecontroller.dart';
+import 'package:PhotoMemoApp/model/comment.dart';
 import 'package:PhotoMemoApp/model/constant.dart';
 import 'package:PhotoMemoApp/model/photomemo.dart';
+import 'package:PhotoMemoApp/screen/comments_screen.dart';
 import 'package:PhotoMemoApp/screen/myview/myImage.dart';
+import 'package:PhotoMemoApp/screen/myview/mydialog.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -62,6 +66,10 @@ class _SharedWithState extends State<SharedWithScreen>{
                 Text('Memo: ${photoMemoList[index].memo}'),
                 Text('Created By: ${photoMemoList[index].createdBy}'),
                 Text('Created By: ${photoMemoList[index].sharedWith}'),
+                RaisedButton(
+                  child: Text("Comments"),
+                  onPressed: () => con.comments(index),
+                ),
               ],
             ),
           ),
@@ -75,4 +83,28 @@ class _Controller {
   _SharedWithState state;
 
   _Controller(this.state);
+
+    void comments(int index) async {
+    MyDialog.circularProgressStart(state.context);
+    try{
+      List<Comment> commentList = 
+        await FirebaseController.getComments(state.photoMemoList[index].docId);
+      MyDialog.circularProgressStop(state.context);
+      Navigator.of(state.context).pushNamed(
+        CommentsScreen.routeName,
+        arguments: {
+          Constant.ARG_USER : state.user,
+          Constant.ARG_ONE_PHOTOMEMO : state.photoMemoList[index],
+          Constant.ARG_COMMENTLIST : commentList,
+        },
+      );
+    }catch (e){
+      MyDialog.circularProgressStop(state.context);
+      MyDialog.info(
+        context: state.context, 
+        title: "getComments error", 
+        content: "$e",
+      );
+    }  
+  }//comments
 }

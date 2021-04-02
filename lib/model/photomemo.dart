@@ -8,6 +8,7 @@ class PhotoMemo {
   DateTime timestamp;
   List<dynamic> sharedWith; //list of email
   List<dynamic> imageLabels; //image identifiers by ML
+  int numComments;
 
   //Keys for firestore documents
   static const TITLE = 'title';
@@ -18,6 +19,8 @@ class PhotoMemo {
   static const TIMESTAMP = 'timestamp';
   static const SHARED_WITH = 'sharedWith';
   static const IMAGE_LABELS = 'imageLabels';
+  static const NUM_COMMENTS = "numComments";
+  
 
   PhotoMemo({
     this.docId,
@@ -29,7 +32,9 @@ class PhotoMemo {
     this.timestamp,
     this.sharedWith,
     this.imageLabels,
+    this.numComments,
   }) {
+    this.numComments ??= 0;
     this.sharedWith ??= [];
     this.imageLabels ??= [];
   }
@@ -42,6 +47,7 @@ class PhotoMemo {
     this.photoFileName = p.photoFileName; 
     this.photoURL = p.photoURL;
     this.timestamp = p.timestamp;
+    this.numComments = p.numComments;
 
     this.sharedWith = [];
     this.sharedWith.addAll(p.sharedWith);
@@ -58,6 +64,7 @@ class PhotoMemo {
     this.photoFileName = p.photoFileName; 
     this.photoURL = p.photoURL;
     this.timestamp = p.timestamp;
+    this.numComments = p.numComments;
 
 
     this.sharedWith = [];
@@ -77,10 +84,12 @@ class PhotoMemo {
       TIMESTAMP : this.timestamp,
       SHARED_WITH : this.sharedWith,
       IMAGE_LABELS : this.imageLabels,
+      NUM_COMMENTS : this.numComments,
     };
   }
 
   static PhotoMemo deserialize(Map<String, dynamic> doc, String docId){
+    doc[NUM_COMMENTS] ??= 0;
     return PhotoMemo(
       docId: docId,
       createdBy: doc[CREATED_BY],
@@ -92,6 +101,7 @@ class PhotoMemo {
         DateTime.fromMillisecondsSinceEpoch(doc[TIMESTAMP].millisecondsSinceEpoch),
       sharedWith: doc[SHARED_WITH],
       imageLabels: doc[IMAGE_LABELS],
+      numComments: doc[NUM_COMMENTS],
     );
   }
 

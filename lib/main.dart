@@ -1,5 +1,6 @@
 import 'package:PhotoMemoApp/model/constant.dart';
 import 'package:PhotoMemoApp/screen/addphotomemo_screen.dart';
+import 'package:PhotoMemoApp/screen/comments_screen.dart';
 import 'package:PhotoMemoApp/screen/detailedview_screen.dart';
 import 'package:PhotoMemoApp/screen/sharedwith_screen.dart';
 import 'package:PhotoMemoApp/screen/signin_screen.dart';
@@ -36,6 +37,7 @@ class PhotoMemoApp extends StatelessWidget {
         DetailedViewScreen.routeName : (context) => DetailedViewScreen(),
         SignUpScreen.routeName : (context) => SignUpScreen(),
         SharedWithScreen.routeName : (context) => SharedWithScreen(),
+        CommentsScreen.routeName : (context) => CommentsScreen(),
       },
     );
   }

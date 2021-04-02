@@ -40,4 +40,38 @@ static void circularProgressStop(BuildContext context) {
       ),
     );
   }
+  static Future<bool> confirm({
+    @required BuildContext context,
+    @required String title,
+    @required String content,
+    @required String cancelText,
+    @required String confirmText,
+    }) async {
+    bool response;
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Text(content),
+        actions: [
+          FlatButton(
+            child: Text(cancelText, style: Theme.of(context).textTheme.button,),
+            onPressed: () {
+              Navigator.of(context).pop();
+              response = false;
+            },
+          ),
+          RaisedButton(
+            child: Text(confirmText, style: Theme.of(context).textTheme.button,),
+            onPressed: () {
+              Navigator.of(context).pop();
+              response = true;
+            },
+          ),
+        ],
+      ),
+    );
+    return response;
+  }
 }
