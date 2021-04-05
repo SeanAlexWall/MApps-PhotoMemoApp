@@ -4,6 +4,7 @@ import 'package:PhotoMemoApp/model/constant.dart';
 import 'package:PhotoMemoApp/model/photomemo.dart';
 import 'package:PhotoMemoApp/screen/comments_screen.dart';
 import 'package:PhotoMemoApp/screen/myview/myImage.dart';
+import 'package:PhotoMemoApp/screen/myview/myTextTheme.dart';
 import 'package:PhotoMemoApp/screen/myview/mydialog.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -66,10 +67,52 @@ class _SharedWithState extends State<SharedWithScreen>{
                 Text('Memo: ${photoMemoList[index].memo}'),
                 Text('Created By: ${photoMemoList[index].createdBy}'),
                 Text('Created By: ${photoMemoList[index].sharedWith}'),
-                RaisedButton(
-                  child: Text("Comments"),
-                  onPressed: () => con.comments(index),
-                ),
+                Row(
+                      children: [
+                        RaisedButton(
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Positioned(
+                                child: Icon(
+                                  Icons.chat_bubble,
+                                ),
+                              ),
+                              Positioned(
+                                top: 0,
+                                child: Text(
+                                  "${photoMemoList[index].numComments}",
+                                  style: CustomTextThemes.alert1(context)
+                                ),
+                              )
+                            ]
+                          ),
+                          onPressed: () => con.comments(index),
+                        ),
+                        SizedBox(width: 10.0),
+                        RaisedButton(
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Positioned(
+                                child: Icon(
+                                  Icons.favorite_border,
+                                ),
+                              ),
+                              Positioned(
+                                child: Text(
+                                  "0",
+                                  // style: (photoMemoList[index].numComments > 0)?
+                                  //   CustomTextThemes.alert1(context)
+                                  //   : Theme.of(context).textTheme.subtitle1,
+                                ),
+                              )
+                            ]
+                          ),
+                          onPressed: () => { print("Like") },
+                        ),
+                      ],
+                    ),
               ],
             ),
           ),

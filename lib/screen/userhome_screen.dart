@@ -145,7 +145,7 @@ class UserHomeState extends State<UserHomeScreen> {
                     Text("Updated At ${photoMemoList[index].timestamp}"),
                     Row(
                       children: [
-                        FlatButton(
+                        RaisedButton(
                           child: Stack(
                             alignment: Alignment.center,
                             children: [
@@ -158,9 +158,7 @@ class UserHomeState extends State<UserHomeScreen> {
                                 top: 0,
                                 child: Text(
                                   "${photoMemoList[index].numComments}",
-                                  style: (photoMemoList[index].numComments > 0)?
-                                    CustomTextThemes.alert1(context)
-                                    : Theme.of(context).textTheme.subtitle1,
+                                  style: CustomTextThemes.alert1(context),
                                 ),
                               )
                             ]
@@ -168,7 +166,7 @@ class UserHomeState extends State<UserHomeScreen> {
                           onPressed: () => con.comments(index),
                         ),
                         SizedBox(width: 10.0),
-                        FlatButton(
+                        RaisedButton(
                           child: Stack(
                             alignment: Alignment.center,
                             children: [

@@ -20,6 +20,7 @@ class CommentsState extends State<CommentsScreen>{
   PhotoMemo onePhotoMemo;
   List<Comment> commentList;
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  GlobalKey<FormState> editFormKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -90,6 +91,7 @@ class CommentsState extends State<CommentsScreen>{
                             ),
                             (con.editIndex != null && con.editIndex == index)?
                             Form(
+                              key: editFormKey,
                               child: Row(
                                 children: [
                                   Expanded(
@@ -102,8 +104,8 @@ class CommentsState extends State<CommentsScreen>{
                                       ),
                                       initialValue: commentList[index].comment,
                                       autocorrect: true,
-                                      // validator: con.validateUpdateComment,
-                                      // onSaved: con.saveUpdateComment,
+                                      validator: con.validateUpdateComment,
+                                      onSaved: con.saveUpdateComment,
                                     ),
                                   ),
                                   Expanded(
@@ -111,7 +113,7 @@ class CommentsState extends State<CommentsScreen>{
                                     child: FlatButton(
                                       color: Colors.green,
                                       child: Icon(Icons.send),
-                                      onPressed: con.postComment,
+                                      onPressed: () => con.updateComment(index),
                                     ),
                                   )
                                 ],
@@ -170,12 +172,12 @@ class _Controller {
   _Controller(this.state);
 
   String validateComment(String value){
-    if(value == "") return "enter comment";
+    if(value == "" && editIndex == null) return "enter comment";
     else return null;
   }
 
   void saveComment(String value){
-    tempComment.comment = value;
+    if(editIndex == null) tempComment.comment = value;
   }
 
   void postComment() async {
@@ -295,4 +297,63 @@ class _Controller {
       state.render(() => {editIndex = null} );
     }
   }
+
+  String validateUpdateComment(String value){
+    if(value == "" && editIndex != null) return "enter comment";
+    else return null;
+  }
+
+  void saveUpdateComment(String value){
+    if(editIndex != null) tempComment.comment = value;
+  }
+
+  void updateComment(int index) async {
+    if(!state.editFormKey.currentState.validate()) return;
+    state.editFormKey.currentState.save();
+
+    MyDialog.circularProgressStart(state.context);
+
+    try {
+      tempComment.timestamp = DateTime.now();
+      
+      Map<String, dynamic> updatedInfo = {
+        Comment.COMMENT : tempComment.comment,
+        Comment.TIMESTAMP : tempComment.timestamp,
+      };
+
+      await FirebaseController.updateComment(
+        state.onePhotoMemo.docId,
+        state.commentList[index].docId,
+        updatedInfo,
+        );
+      
+      try{
+        state.commentList = 
+          await FirebaseController.getComments(state.onePhotoMemo.docId);
+        MyDialog.circularProgressStop(state.context);
+      }catch (e){
+        MyDialog.circularProgressStop(state.context);
+        print("$e");
+        MyDialog.info(
+          context: state.context, 
+          title: "getComments error", 
+          content: "$e",
+        );
+      }
+
+      state.editFormKey.currentState.reset();
+      state.render((){
+        editIndex = null;
+      }); //to refresh the screen
+    } catch (e) {
+      MyDialog.circularProgressStop(state.context);
+      print("$e");
+      MyDialog.info(
+        context: state.context,
+        title: "update  comment error",
+        content: "$e",
+      );
+    }
+  }
+
 }
