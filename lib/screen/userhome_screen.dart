@@ -1,6 +1,7 @@
 import 'package:PhotoMemoApp/controller/firebasecontroller.dart';
 import 'package:PhotoMemoApp/model/comment.dart';
 import 'package:PhotoMemoApp/model/constant.dart';
+import 'package:PhotoMemoApp/model/myuser.dart';
 import 'package:PhotoMemoApp/model/photomemo.dart';
 import 'package:PhotoMemoApp/screen/addphotomemo_screen.dart';
 import 'package:PhotoMemoApp/screen/comments_screen.dart';
@@ -8,6 +9,7 @@ import 'package:PhotoMemoApp/screen/detailedview_screen.dart';
 import 'package:PhotoMemoApp/screen/myview/myImage.dart';
 import 'package:PhotoMemoApp/screen/myview/myTextTheme.dart';
 import 'package:PhotoMemoApp/screen/myview/mydialog.dart';
+import 'package:PhotoMemoApp/screen/profile_screen.dart';
 import 'package:PhotoMemoApp/screen/sharedwith_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -24,6 +26,7 @@ class UserHomeScreen extends StatefulWidget{
 class UserHomeState extends State<UserHomeScreen> {
   _Controller con;
   User user;
+  MyUser userProfile;
   List<PhotoMemo> photoMemoList;
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
@@ -43,6 +46,7 @@ class UserHomeState extends State<UserHomeScreen> {
     Map args = ModalRoute.of(context).settings.arguments;
     user ??= args[Constant.ARG_USER];
     photoMemoList ??= args[Constant.ARG_PHOTOMEMOLIST];
+    userProfile ??= args[Constant.ARG_USER_PROFILE];
     return WillPopScope(
       onWillPop: () => Future.value(false),
       child: Scaffold(
@@ -86,8 +90,10 @@ class UserHomeState extends State<UserHomeScreen> {
           child: ListView(
             children: [
               UserAccountsDrawerHeader(
-                currentAccountPicture: Icon(Icons.person, size: 100),
-                accountName: Text(user.displayName ?? 'Not Set' ), 
+                currentAccountPicture: (userProfile.photoURL == null)?
+                  Icon(Icons.person, size: 100)
+                  :MyImage.network(url: userProfile.photoURL, context: context),
+                accountName: Text(userProfile.displayName ?? user.email ), 
                 accountEmail: Text(user.email),
               ),
               ListTile(
@@ -98,7 +104,14 @@ class UserHomeState extends State<UserHomeScreen> {
               ListTile(
                 leading: Icon(Icons.settings),
                 title: Text("settings"),
-                onTap: null,
+                onTap: () => Navigator.pushNamed(
+                  context,
+                  ProfileScreen.routeName,
+                  arguments: {
+                    Constant.ARG_USER : user,
+                    Constant.ARG_USER_PROFILE : userProfile,
+                  },
+                ),
               ),
               ListTile(
                 leading: Icon(Icons.exit_to_app),
@@ -165,28 +178,28 @@ class UserHomeState extends State<UserHomeScreen> {
                           ),
                           onPressed: () => con.comments(index),
                         ),
-                        SizedBox(width: 10.0),
-                        RaisedButton(
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              Positioned(
-                                child: Icon(
-                                  Icons.favorite_border,
-                                ),
-                              ),
-                              Positioned(
-                                child: Text(
-                                  "0",
-                                  // style: (photoMemoList[index].numComments > 0)?
-                                  //   CustomTextThemes.alert1(context)
-                                  //   : Theme.of(context).textTheme.subtitle1,
-                                ),
-                              )
-                            ]
-                          ),
-                          onPressed: () => { print("Like") },
-                        ),
+                        // SizedBox(width: 10.0),
+                        // RaisedButton(
+                        //   child: Stack(
+                        //     alignment: Alignment.center,
+                        //     children: [
+                        //       Positioned(
+                        //         child: Icon(
+                        //           Icons.favorite_border,
+                        //         ),
+                        //       ),
+                        //       Positioned(
+                        //         child: Text(
+                        //           "0",
+                        //           // style: (photoMemoList[index].numComments > 0)?
+                        //           //   CustomTextThemes.alert1(context)
+                        //           //   : Theme.of(context).textTheme.subtitle1,
+                        //         ),
+                        //       )
+                        //     ]
+                        //   ),
+                        //   onPressed: () => { print("Like") },
+                        // ),
                       ],
                     ),
                   ],

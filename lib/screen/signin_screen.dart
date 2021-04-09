@@ -1,11 +1,15 @@
 import 'package:PhotoMemoApp/controller/firebasecontroller.dart';
 import 'package:PhotoMemoApp/model/constant.dart';
+import 'package:PhotoMemoApp/model/myuser.dart';
 import 'package:PhotoMemoApp/model/photomemo.dart';
 import 'package:PhotoMemoApp/screen/myview/mydialog.dart';
 import 'package:PhotoMemoApp/screen/signup_screen.dart';
+import 'package:PhotoMemoApp/screen/test.dart';
 import 'package:PhotoMemoApp/screen/userhome_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
+import 'myview/conifg.dart';
 
 class SignInScreen extends StatefulWidget{
   static const routeName = "/signInScreen";
@@ -85,6 +89,13 @@ class _SignInState extends State<SignInScreen> {
                     style: Theme.of(context).textTheme.button,
                   ),
                 ),
+                FlatButton(
+                  onPressed: () => Navigator.pushNamed(context, TestScreen.routeName),
+                  child: Text(
+                    "Test",
+                    style: Theme.of(context).textTheme.button,
+                  ),
+                ),
               ],
             ),
           ),
@@ -126,10 +137,12 @@ class _Controller{
     state.formKey.currentState.save();
 
     User user;
+    MyUser userProfile;
     MyDialog.circularProgressStart(state.context);
 
     try{
       user = await FirebaseController.signIn(email: email, password: password);
+      userProfile = await FirebaseController.getUserProfile(user.uid);
     }catch(e){
       MyDialog.circularProgressStop(state.context);
       MyDialog.info(
@@ -139,6 +152,14 @@ class _Controller{
       );
       return;
     }
+
+    // print(userProfile.appColor);
+    // if(userProfile.appColor == null) userProfile.appColor = Colors.green;
+    // if(userProfile.darkMode == null) userProfile.darkMode = true;
+
+    // currentTheme.setColor(userProfile.appColor);
+    currentTheme.setColor(Colors.green);
+    currentTheme.setBrightness(userProfile.darkMode);
 
     try{
       List<PhotoMemo> photoMemoList = 
@@ -150,6 +171,7 @@ class _Controller{
         arguments: {
           Constant.ARG_USER : user,
           Constant.ARG_PHOTOMEMOLIST : photoMemoList,
+          Constant.ARG_USER_PROFILE : userProfile,
         },
       );
     } catch(e){

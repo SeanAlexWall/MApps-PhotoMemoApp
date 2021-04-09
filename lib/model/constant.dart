@@ -18,4 +18,10 @@ class Constant {
   static const ARG_FILENAME = 'filename';
 
   static const MIN_ML_CONFIDENCE = 0.7;
+
+  static const ARG_PHOTO_URL = "photoURL";
+  static const ARG_DISPLAY_NAME = "displayName";
+
+  static const PROFILE_COLLECTION = "userProfiles";
+  static const ARG_USER_PROFILE = "user_profile";
 }
