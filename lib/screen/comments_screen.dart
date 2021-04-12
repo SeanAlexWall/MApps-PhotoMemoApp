@@ -22,6 +22,7 @@ class CommentsState extends State<CommentsScreen>{
   List<Comment> commentList;
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
   GlobalKey<FormState> editFormKey = GlobalKey<FormState>();
+  GlobalKey<FormState> replyFormKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -71,8 +72,10 @@ class CommentsState extends State<CommentsScreen>{
                             Row(
                               children: [
                                 RaisedButton(
-                                  child: Text("reply"),
-                                  onPressed: null,
+                                  child: (con.replyIndex != null && con.replyIndex == index)? 
+                                    Text("cancel")
+                                    : Text("reply"),
+                                  onPressed: () => con.setReplyIndex(index)
                                 ),
                                 //if the comment was posted by the current user
                                 (commentList[index].postedBy == user.email)?
@@ -115,6 +118,36 @@ class CommentsState extends State<CommentsScreen>{
                                       color: Colors.green,
                                       child: Icon(Icons.send),
                                       onPressed: () => con.updateComment(index),
+                                    ),
+                                  )
+                                ],
+                              ),
+                            )
+                            :SizedBox(height: 1.0),
+                            (con.replyIndex != null && con.replyIndex == index)?
+                            Form(
+                              key: replyFormKey,
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    flex: 5,
+                                    child: TextFormField(
+                                      enabled: true,
+                                      style: Theme.of(context).textTheme.bodyText2,
+                                      decoration: InputDecoration(
+                                        hintText: "Reply to Comment",
+                                      ),
+                                      autocorrect: true,
+                                      validator: con.validateReplyComment,
+                                      onSaved: con.saveReplyComment,
+                                    ),
+                                  ),
+                                  Expanded(
+                                    flex: 2,
+                                    child: FlatButton(
+                                      color: Colors.green,
+                                      child: Icon(Icons.send),
+                                      onPressed: () => con.replyComment(index),
                                     ),
                                   )
                                 ],
@@ -168,7 +201,9 @@ class CommentsState extends State<CommentsScreen>{
 class _Controller {
   CommentsState state;
   Comment tempComment = Comment();
+  Comment tempReplyComment = Comment();
   int editIndex;
+  int replyIndex;
 
   _Controller(this.state);
 
@@ -357,4 +392,85 @@ class _Controller {
     }
   }
 
+  void setReplyIndex(int index){
+    if(replyIndex == null){
+      state.render(() => {replyIndex = index} );
+    }
+    else if(replyIndex == index){
+      state.render(() => {replyIndex = null} );
+    }
+  }
+
+  String validateReplyComment(String value){
+    if(value == "" && replyIndex != null) return "enter comment";
+    else return null;
+  }
+
+  void saveReplyComment(String value){
+    if(replyIndex != null) tempReplyComment.comment 
+      = "@" + state.commentList[replyIndex].postedBy + " " + value;
+  }
+
+  void replyComment(int index) async{
+    if(!state.replyFormKey.currentState.validate()) return;
+    state.replyFormKey.currentState.save();
+
+    MyDialog.circularProgressStart(state.context);
+
+    try {
+      tempReplyComment.postedBy = state.user.email;
+      tempReplyComment.timestamp = DateTime.now();
+      tempReplyComment.photoMemoId = state.onePhotoMemo.docId;
+      
+      String docId = await FirebaseController.addComment(tempReplyComment);
+      tempReplyComment.docId = docId;
+      
+      Comment newComment = Comment.clone(tempReplyComment);
+      
+      state.commentList.insert(0, newComment);
+
+      try{
+        state.commentList = 
+          await FirebaseController.getComments(state.onePhotoMemo.docId);
+        try{
+          if(state.onePhotoMemo.numComments == null) 
+            state.onePhotoMemo.numComments = 1;
+          else
+            state.onePhotoMemo.numComments++;
+          await FirebaseController.updatePhotoMemo(
+            state.onePhotoMemo.docId, 
+            {PhotoMemo.NUM_COMMENTS : state.onePhotoMemo.numComments,}
+          );
+          MyDialog.circularProgressStop(state.context);
+        } catch (e){
+          MyDialog.info(
+            context: state.context,
+            title: "Update PhotoMemo in Add Comment error",
+            content: "$e",
+          );
+          MyDialog.circularProgressStop(state.context);
+        }
+      }catch (e){
+        MyDialog.circularProgressStop(state.context);
+        print("$e");
+        MyDialog.info(
+          context: state.context, 
+          title: "getComments error", 
+          content: "$e",
+        );
+      }
+      state.replyFormKey.currentState.reset();
+      state.render((){
+        replyIndex = null;
+      }); //to refresh the screen
+    } catch (e) {
+      MyDialog.circularProgressStop(state.context);
+      print("$e");
+      MyDialog.info(
+        context: state.context,
+        title: "post comment error",
+        content: "$e",
+      );
+    }
+  }
 }
