@@ -2,6 +2,7 @@ import 'package:PhotoMemoApp/controller/firebasecontroller.dart';
 import 'package:PhotoMemoApp/model/constant.dart';
 import 'package:PhotoMemoApp/model/myuser.dart';
 import 'package:PhotoMemoApp/model/photomemo.dart';
+import 'package:PhotoMemoApp/screen/myview/myAppTheme.dart';
 import 'package:PhotoMemoApp/screen/myview/mydialog.dart';
 import 'package:PhotoMemoApp/screen/signup_screen.dart';
 import 'package:PhotoMemoApp/screen/test.dart';
@@ -153,12 +154,11 @@ class _Controller{
       return;
     }
 
-    // print(userProfile.appColor);
-    // if(userProfile.appColor == null) userProfile.appColor = Colors.green;
-    // if(userProfile.darkMode == null) userProfile.darkMode = true;
+    print(userProfile.appColor);
+    if(userProfile.appColor == null) userProfile.appColor = MyAppTheme.GREEN;
+    if(userProfile.darkMode == null) userProfile.darkMode = true;
 
-    // currentTheme.setColor(userProfile.appColor);
-    currentTheme.setColor(Colors.green);
+    currentTheme.setColor(userProfile.appColor);
     currentTheme.setBrightness(userProfile.darkMode);
 
     try{

@@ -95,44 +95,33 @@ class FirebaseController {
   }
 
   static Future<MyUser> getUserProfile(String uid) async {
-    print("====================================================in getUserProfile");
     MyUser userProfile;
-    print("====================================================before querySnapshot");
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
       .collection(Constant.PROFILE_COLLECTION)
       .where(MyUser.UID, isEqualTo: uid)
       .get();
     //there is not yet a userprofile for this uid
-    print("====================================================before size if");
     if(querySnapshot.size == 0){
-      print("====================================================in if size 0");
       userProfile = MyUser(uid);
-      print("====================================================before addUserProfile");
       userProfile.docId = await addUserProfile(userProfile);
     }
     else if(querySnapshot.size == 1){
-      print("====================================================in if size 1");
       querySnapshot.docs.forEach((doc) {
         userProfile = MyUser.deserialize(doc.data(), doc.id);
       });
     }
     else throw "More than one user profile for specified uid: $uid";
-    print("====================================================before return");
     return userProfile;
   }
 
   static Future<String> addUserProfile(MyUser userProfile) async{
-    print("====================================================in addUserProfile");
     var ref = await FirebaseFirestore.instance
       .collection(Constant.PROFILE_COLLECTION)
       .add(userProfile.serialize());
-    print("====================================================before return");
     return ref.id;
   }
 
   static Future<void> updateUserProfile(String docId, Map<String, dynamic> updatedInfo) async{
-    print("In updateUserProfile ============== $docId");
-    print("In updateUserProfile ============== $updatedInfo");
     await FirebaseFirestore.instance
       .collection(Constant.PROFILE_COLLECTION)
       .doc(docId)

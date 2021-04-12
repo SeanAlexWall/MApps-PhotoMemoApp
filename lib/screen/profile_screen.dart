@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:PhotoMemoApp/controller/firebasecontroller.dart';
 import 'package:PhotoMemoApp/model/constant.dart';
 import 'package:PhotoMemoApp/model/myuser.dart';
+import 'package:PhotoMemoApp/screen/myview/myAppTheme.dart';
 import 'package:PhotoMemoApp/screen/myview/myImage.dart';
 import 'package:PhotoMemoApp/screen/myview/mydialog.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -151,22 +152,20 @@ class ProfileState extends State<ProfileScreen>{
                   style: Theme.of(context).textTheme.bodyText2,
                 ),
                 SizedBox(height: 5.0),
-                DropdownButton<Color>(
-                  value: currentTheme.color,
+                DropdownButton<String>(
+                  value: MyAppTheme.colorOptions.keys.firstWhere(
+                    (element) => MyAppTheme.colorOptions[element] == currentTheme.color),
                   icon: const Icon(Icons.arrow_downward),
                   iconSize: 24,
                   elevation: 16,
                   onChanged: editMode? con.setColor : null,
-                  items: <Color>[
-                    Colors.red,
-                    Colors.blue,
-                    Colors.green,
-                  ].map<DropdownMenuItem<Color>>((Color value){
-                    return DropdownMenuItem<Color>(
+                  items: MyAppTheme.colorOptions.keys.toList()
+                  .map<DropdownMenuItem<String>>((String value){
+                    return DropdownMenuItem<String>(
                       value: value,
                       child: Icon(
                         Icons.brightness_1,
-                        color: value,
+                        color: MyAppTheme.colorOptions[value],
                       ),
                     );
                   }).toList(),
@@ -205,6 +204,7 @@ class _Controller {
     MyDialog.circularProgressStart(state.context);
     try{
       //if a new photo has been selected
+      //PHOTO--------------------------------------------------------------------------------
       if(photoFile != null){
         Map photoInfo = await FirebaseController.uploadPhotoFile(
           photo: photoFile,
@@ -222,27 +222,10 @@ class _Controller {
         state.updatedInfo[Constant.ARG_PHOTO_URL] = photoInfo[Constant.ARG_DOWNLOADURL]; 
         state.userProfile.photoURL = state.updatedInfo[Constant.ARG_PHOTO_URL];
       }
-      // print("++++++++++++++++++Line 224");
-      // print(colorUpdated);
-      // if(colorUpdated){
-      //   state.userProfile.colorMap = {
-      //     100: state.userProfile.appColor[100],
-      //     200: state.userProfile.appColor[200],
-      //     300: state.userProfile.appColor[300],
-      //     400: state.userProfile.appColor[400],
-      //     500: state.userProfile.appColor[500],
-      //     600: state.userProfile.appColor[600],
-      //     700: state.userProfile.appColor[700],
-      //     800: state.userProfile.appColor[800],
-      //     900: state.userProfile.appColor[900],
-      //   };
-      //   print("++++++++++++++++++Line 241");
-      //   //We can later use the int value and the color map to recreate the MaterialColor
-      //   state.updatedInfo[MyUser.COLOR_MAP] = state.userProfile.colorMap;
-      //   colorUpdated = false;
-      // }
-      // print("++++++++++++++++++Line 244");
-      //if there is info to be updated
+      //If the DisplayName, Color, or Brightness(dark mode) is changed,
+      //They are added to updatedInfo in their respective onSaved functions
+      //Even if the photo is not updated, the below if will still go through
+      //if any of those other fields are updated
       if (state.updatedInfo.isNotEmpty) {
         try{
           print("Line 249 ============== ${state.updatedInfo}");
@@ -308,16 +291,13 @@ class _Controller {
   }
   
   void switchBrightness(bool value){
-    // state.updatedInfo[MyUser.DARK_MODE] = value;
+    state.updatedInfo[MyUser.DARK_MODE] = value;
     currentTheme.switchBrightness();
     state.render((){});
   }
 
-  void setColor(Color value){
-    // colorUpdated = true;
-    // print(colorUpdated);
-    // state.userProfile.appColor = value;
-    // state.updatedInfo[MyUser.COLOR_VALUE] = value.value;
+  void setColor(String value){
+    state.updatedInfo[MyUser.COLOR] = value;
     currentTheme.setColor(value);
     state.render((){});
   }
