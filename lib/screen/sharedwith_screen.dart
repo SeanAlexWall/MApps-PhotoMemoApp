@@ -1,13 +1,17 @@
 import 'package:PhotoMemoApp/controller/firebasecontroller.dart';
 import 'package:PhotoMemoApp/model/comment.dart';
 import 'package:PhotoMemoApp/model/constant.dart';
+import 'package:PhotoMemoApp/model/myuser.dart';
 import 'package:PhotoMemoApp/model/photomemo.dart';
 import 'package:PhotoMemoApp/screen/comments_screen.dart';
+import 'package:PhotoMemoApp/screen/myview/conifg.dart';
+import 'package:PhotoMemoApp/screen/myview/myAppTheme.dart';
 import 'package:PhotoMemoApp/screen/myview/myImage.dart';
 import 'package:PhotoMemoApp/screen/myview/myTextTheme.dart';
 import 'package:PhotoMemoApp/screen/myview/mydialog.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class SharedWithScreen extends StatefulWidget{
   static const routeName = "/sharedWithScreen";
@@ -21,6 +25,7 @@ class SharedWithScreen extends StatefulWidget{
 class _SharedWithState extends State<SharedWithScreen>{
   _Controller con;
   User user;
+  MyUser userProfile;
   List<PhotoMemo> photoMemoList;
 
   @override
@@ -38,6 +43,7 @@ class _SharedWithState extends State<SharedWithScreen>{
   Widget build(BuildContext context) {
     Map args = ModalRoute.of(context).settings.arguments;
     user ??= args[Constant.ARG_USER];
+    userProfile ??= args[Constant.ARG_USER_PROFILE];
     photoMemoList ??= args[Constant.ARG_PHOTOMEMOLIST];
 
     return Scaffold(
@@ -51,6 +57,16 @@ class _SharedWithState extends State<SharedWithScreen>{
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                //add later switching between this and unfollow button                
+                (photoMemoList[index].followers.contains(user.email))?
+                RaisedButton(
+                  child: Text("Unfollow ${photoMemoList[index].createdBy}"),
+                  onPressed: () => con.unfollow(index),
+                )
+                : RaisedButton(
+                  child: Text("Follow ${photoMemoList[index].createdBy}"),
+                  onPressed: () => con.follow(index),
+                ),
                 Center(
                   child: Container(
                     height: MediaQuery.of(context).size.height * 0.4,
@@ -66,60 +82,48 @@ class _SharedWithState extends State<SharedWithScreen>{
                 ),
                 Text('Memo: ${photoMemoList[index].memo}'),
                 Text('Created By: ${photoMemoList[index].createdBy}'),
-                Text('Created By: ${photoMemoList[index].sharedWith}'),
+                Text('Shared With: ${photoMemoList[index].sharedWith}'),
+                Text("Followers: ${photoMemoList[index].followers}"),
                 Row(
-                      children: [
-                        RaisedButton(
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              Positioned(
-                                child: Icon(
-                                  Icons.chat_bubble,
-                                ),
-                              ),
-                              Positioned(
-                                top: 0,
-                                child: Text(
-                                  "${photoMemoList[index].numComments}",
-                                  style: CustomTextThemes.alert1(context)
-                                ),
-                              )
-                            ]
+                  children: [
+                    RaisedButton(
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.chat_bubble,
                           ),
-                          onPressed: () => con.comments(index),
-                        ),
-                        SizedBox(width: 10.0),
-                        RaisedButton(
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              Positioned(
-                                child: Icon(
-                                  Icons.favorite_border,
-                                ),
-                              ),
-                              Positioned(
-                                child: Text(
-                                  "0",
-                                  // style: (photoMemoList[index].numComments > 0)?
-                                  //   CustomTextThemes.alert1(context)
-                                  //   : Theme.of(context).textTheme.subtitle1,
-                                ),
-                              )
-                            ]
-                          ),
-                          onPressed: () => { print("Like") },
-                        ),
-                      ],
+                          Text(
+                            " ${photoMemoList[index].numComments}",
+                            //style: CustomTextThemes.alert1(context)
+                          )
+                        ]
+                      ),
+                      onPressed: () => con.comments(index),
                     ),
+                    SizedBox(width: 5.0),
+                    RaisedButton(
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.favorite_border,
+                          ),
+                          Text(
+                            photoMemoList[index].numLikes == null? 
+                            " 0" : " ${photoMemoList[index].numLikes}",
+                            //style: CustomTextThemes.alert1(context)
+                          )
+                        ]
+                      ),
+                      onPressed: () => con.like(index),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
         ),
     );
   }
-
 }
 
 class _Controller {
@@ -127,7 +131,7 @@ class _Controller {
 
   _Controller(this.state);
 
-    void comments(int index) async {
+  void comments(int index) async {
     MyDialog.circularProgressStart(state.context);
     try{
       List<Comment> commentList = 
@@ -150,4 +154,118 @@ class _Controller {
       );
     }  
   }//comments
+
+  void follow(int index) async{
+    try {
+      MyUser posterProfile = 
+        await FirebaseController.getUserProfileFromEmail(email: state.photoMemoList[index].createdBy);
+      
+      posterProfile.followers.add(state.user.email.trim());
+      
+      try {
+        await FirebaseController.updateUserProfile(posterProfile.docId, {MyUser.FOLLOWERS: posterProfile.followers});
+      } catch (e) {
+        MyDialog.info(
+          context: state.context,
+          title: "UpdateUserProfile in follow Error",
+          content: "$e",
+        );
+      }
+
+      state.photoMemoList[index].followers.add(state.user.email);
+
+      try{
+        await FirebaseController.updatePhotoMemo(
+          state.photoMemoList[index].docId,
+          {PhotoMemo.FOLLOWERS: state.photoMemoList[index].followers},
+        );
+      } catch(e){
+        MyDialog.info(
+          context: state.context,
+          title: "UpdatePhotoMemo in follow Error",
+          content: "$e",
+        );
+      }
+    } catch (e) {
+      MyDialog.info(
+        context: state.context, 
+        title: "GetUserProfileFromEmail in follow Error", 
+        content: "$e",
+      );
+    }
+    state.render((){}); // to refresh the page
+  }
+
+  void unfollow(int index) async{
+    try {
+      MyUser posterProfile = 
+        await FirebaseController.getUserProfileFromEmail(email: state.photoMemoList[index].createdBy);
+      
+      posterProfile.followers.removeWhere((element) => element == state.user.email.trim());
+      
+      try {
+        await FirebaseController.updateUserProfile(posterProfile.docId, {MyUser.FOLLOWERS: posterProfile.followers});
+      } catch (e) {
+        MyDialog.info(
+          context: state.context,
+          title: "UpdateUserProfile in unfollow Error",
+          content: "$e",
+        );
+      }
+
+      state.photoMemoList[index].followers.removeWhere((element) => element == state.user.email);
+
+      try{
+        await FirebaseController.updatePhotoMemo(
+          state.photoMemoList[index].docId,
+          {PhotoMemo.FOLLOWERS: state.photoMemoList[index].followers},
+        );
+      } catch(e){
+        MyDialog.info(
+          context: state.context,
+          title: "UpdatePhotoMemo in unfollow Error",
+          content: "$e",
+        );
+      }
+    } catch (e) {
+      MyDialog.info(
+        context: state.context, 
+        title: "GetUserProfileFromEmail in unfollow Error", 
+        content: "$e",
+      );
+    }
+    state.render((){}); // to refresh the page
+  }
+
+  void like(int index) async{
+    try{
+      if(state.photoMemoList[index].numLikes == null) 
+        state.photoMemoList[index].numLikes = 1;
+      else
+        state.photoMemoList[index].numLikes++;
+
+      
+      await FirebaseController.updatePhotoMemo(
+          state.photoMemoList[index].docId, 
+          {PhotoMemo.NUM_LIKES : state.photoMemoList[index].numLikes,}
+          );
+      Fluttertoast.showToast(
+        msg: "Liked!",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIosWeb: 1,
+        backgroundColor: currentTheme.color,
+        textColor: Theme.of(state.context).textTheme.bodyText1.color,
+        fontSize: 16.0
+      );
+      state.render((){}); //to refresh the page
+    } catch (e){
+      MyDialog.info(
+        context: state.context,
+        title: "Update PhotoMemo in Like error",
+        content: "$e",
+      );
+      MyDialog.circularProgressStop(state.context);
+    }
+  }
 }

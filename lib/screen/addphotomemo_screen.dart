@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:PhotoMemoApp/controller/firebasecontroller.dart';
 import 'package:PhotoMemoApp/model/constant.dart';
+import 'package:PhotoMemoApp/model/myuser.dart';
 import 'package:PhotoMemoApp/model/photomemo.dart';
 import 'package:PhotoMemoApp/screen/myview/mydialog.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -21,6 +22,7 @@ class AddPhotoMemoScreen extends StatefulWidget{
 class _AddPhotoMemoState extends State<AddPhotoMemoScreen> {
   _Controller con;
   User user;
+  MyUser userProfile;
   List<PhotoMemo> photoMemoList;
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
   File photo;
@@ -40,6 +42,7 @@ class _AddPhotoMemoState extends State<AddPhotoMemoScreen> {
   Widget build(BuildContext context) {
     Map args = ModalRoute.of(context).settings.arguments;
     user ??= args[Constant.ARG_USER];
+    userProfile ??= args[Constant.ARG_USER_PROFILE];
     photoMemoList ??= args[Constant.ARG_PHOTOMEMOLIST];
     return Scaffold(
       appBar: AppBar(
@@ -178,6 +181,8 @@ class _Controller {
       tempMemo.timestamp = DateTime.now();
       tempMemo.createdBy = state.user.email;
       tempMemo.imageLabels = imageLabels;
+      tempMemo.sharedWith.addAll(state.userProfile.followers); //shares with all followers
+      tempMemo.followers.addAll(state.userProfile.followers); //so that sharedwith can switch between follow/unfollow buttons
 
       String docId = await FirebaseController.addPhotoMemo(tempMemo);
       tempMemo.docId = docId;
@@ -232,7 +237,6 @@ class _Controller {
     if(value.trim().length != 0){
       tempMemo.sharedWith = value.split(RegExp('(,| )+'))
       .map((e)=> e.trim()).toList();
-
     }
   }
 }

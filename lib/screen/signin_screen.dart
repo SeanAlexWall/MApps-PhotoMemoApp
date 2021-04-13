@@ -143,7 +143,7 @@ class _Controller{
 
     try{
       user = await FirebaseController.signIn(email: email, password: password);
-      userProfile = await FirebaseController.getUserProfile(user.uid);
+      userProfile = await FirebaseController.getUserProfile(user.uid, user.email);
     }catch(e){
       MyDialog.circularProgressStop(state.context);
       MyDialog.info(

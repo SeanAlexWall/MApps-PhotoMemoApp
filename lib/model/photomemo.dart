@@ -9,6 +9,8 @@ class PhotoMemo {
   List<dynamic> sharedWith; //list of email
   List<dynamic> imageLabels; //image identifiers by ML
   int numComments;
+  int numLikes;
+  List<dynamic> followers;
 
   //Keys for firestore documents
   static const TITLE = 'title';
@@ -20,6 +22,8 @@ class PhotoMemo {
   static const SHARED_WITH = 'sharedWith';
   static const IMAGE_LABELS = 'imageLabels';
   static const NUM_COMMENTS = "numComments";
+  static const NUM_LIKES = "numLikes";
+  static const FOLLOWERS = "followers";
   
 
   PhotoMemo({
@@ -33,10 +37,14 @@ class PhotoMemo {
     this.sharedWith,
     this.imageLabels,
     this.numComments,
+    this.numLikes,
+    this.followers,
   }) {
     this.numComments ??= 0;
+    this.numLikes ??= 0;
     this.sharedWith ??= [];
     this.imageLabels ??= [];
+    this.followers ??= [];
   }
 
   PhotoMemo.clone(PhotoMemo p){
@@ -48,12 +56,16 @@ class PhotoMemo {
     this.photoURL = p.photoURL;
     this.timestamp = p.timestamp;
     this.numComments = p.numComments;
+    this.numLikes = p.numLikes;
 
     this.sharedWith = [];
     this.sharedWith.addAll(p.sharedWith);
 
     this.imageLabels = [];
     this.imageLabels.addAll(p.imageLabels);
+
+    this.followers = [];
+    this.followers.addAll(p.followers);
   }
 
   void assign(PhotoMemo p){
@@ -65,13 +77,16 @@ class PhotoMemo {
     this.photoURL = p.photoURL;
     this.timestamp = p.timestamp;
     this.numComments = p.numComments;
-
+    this.numLikes = p.numLikes;
 
     this.sharedWith = [];
     this.sharedWith.addAll(p.sharedWith);
 
     this.imageLabels = [];
     this.imageLabels.addAll(p.imageLabels);
+
+    this.followers = [];
+    this.followers.addAll(p.followers);
   }
 
   Map<String, dynamic> serialize(){
@@ -85,6 +100,8 @@ class PhotoMemo {
       SHARED_WITH : this.sharedWith,
       IMAGE_LABELS : this.imageLabels,
       NUM_COMMENTS : this.numComments,
+      NUM_LIKES : this.numLikes,
+      FOLLOWERS: this.followers,
     };
   }
 
@@ -102,6 +119,8 @@ class PhotoMemo {
       sharedWith: doc[SHARED_WITH],
       imageLabels: doc[IMAGE_LABELS],
       numComments: doc[NUM_COMMENTS],
+      numLikes: doc[NUM_LIKES],
+      followers: doc[FOLLOWERS],
     );
   }
 

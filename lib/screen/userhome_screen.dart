@@ -159,47 +159,34 @@ class UserHomeState extends State<UserHomeScreen> {
                     Row(
                       children: [
                         RaisedButton(
-                          child: Stack(
-                            alignment: Alignment.center,
+                          child: Row(
                             children: [
-                              Positioned(
-                                child: Icon(
-                                  Icons.chat_bubble,
-                                ),
+                              Icon(
+                                Icons.chat_bubble,
                               ),
-                              Positioned(
-                                top: 0,
-                                child: Text(
-                                  "${photoMemoList[index].numComments}",
-                                  style: CustomTextThemes.alert1(context),
-                                ),
+                              Text(
+                                " ${photoMemoList[index].numComments}",
+                                //style: CustomTextThemes.alert1(context),
                               )
                             ]
                           ),
                           onPressed: () => con.comments(index),
                         ),
-                        // SizedBox(width: 10.0),
-                        // RaisedButton(
-                        //   child: Stack(
-                        //     alignment: Alignment.center,
-                        //     children: [
-                        //       Positioned(
-                        //         child: Icon(
-                        //           Icons.favorite_border,
-                        //         ),
-                        //       ),
-                        //       Positioned(
-                        //         child: Text(
-                        //           "0",
-                        //           // style: (photoMemoList[index].numComments > 0)?
-                        //           //   CustomTextThemes.alert1(context)
-                        //           //   : Theme.of(context).textTheme.subtitle1,
-                        //         ),
-                        //       )
-                        //     ]
-                        //   ),
-                        //   onPressed: () => { print("Like") },
-                        // ),
+                        SizedBox(width: 10.0),
+                        Container(
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.favorite_border,
+                              ),
+                              Text(
+                                photoMemoList[index].numLikes == null? 
+                                " 0" : " ${photoMemoList[index].numLikes}",
+                                //style: CustomTextThemes.alert1(context)
+                              )
+                            ]
+                          ),
+                        ),
                       ],
                     ),
                   ],
@@ -229,6 +216,7 @@ class _Controller {
       arguments: {
         Constant.ARG_USER : state.user,
         Constant.ARG_PHOTOMEMOLIST : state.photoMemoList,
+        Constant.ARG_USER_PROFILE : state.userProfile,
         },
     );
     state.render((){}); //refresh
@@ -276,6 +264,7 @@ class _Controller {
         arguments: {
           Constant.ARG_USER : state.user,
           Constant.ARG_PHOTOMEMOLIST : photoMemoList,
+          Constant.ARG_USER_PROFILE : state.userProfile,
         }   
       );
       Navigator.pop(state.context); //pops drawer

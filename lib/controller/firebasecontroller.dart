@@ -4,6 +4,7 @@ import 'package:PhotoMemoApp/model/comment.dart';
 import 'package:PhotoMemoApp/model/constant.dart';
 import 'package:PhotoMemoApp/model/myuser.dart';
 import 'package:PhotoMemoApp/model/photomemo.dart';
+import 'package:PhotoMemoApp/screen/myview/mydialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
@@ -94,7 +95,7 @@ class FirebaseController {
 
   }
 
-  static Future<MyUser> getUserProfile(String uid) async {
+  static Future<MyUser> getUserProfile(String uid, String email) async {
     MyUser userProfile;
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
       .collection(Constant.PROFILE_COLLECTION)
@@ -102,8 +103,9 @@ class FirebaseController {
       .get();
     //there is not yet a userprofile for this uid
     if(querySnapshot.size == 0){
-      userProfile = MyUser(uid);
+      userProfile = MyUser(uid, email);
       userProfile.docId = await addUserProfile(userProfile);
+      
     }
     else if(querySnapshot.size == 1){
       querySnapshot.docs.forEach((doc) {
@@ -207,4 +209,38 @@ class FirebaseController {
       .doc(docId)
       .update(updateInfo);
   }
+
+  static Future<MyUser> getUserProfileFromEmail({@required String email}) async {
+    MyUser posterProfile;
+
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+      .collection(Constant.PROFILE_COLLECTION)
+      .where(MyUser.EMAIL, isEqualTo: email)
+      .get();
+    querySnapshot.docs.forEach((doc) {
+      posterProfile = MyUser.deserialize(doc.data(), doc.id);
+    });
+
+    return posterProfile;
+  }
+
+  static Future<void> addFollower({@required String posterEmail, @required String followerEmail }) async{
+    MyUser posterProfile;
+
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+      .collection(Constant.PROFILE_COLLECTION)
+      .where(MyUser.EMAIL, isEqualTo: posterEmail)
+      .get();
+    querySnapshot.docs.forEach((doc) {
+      posterProfile = MyUser.deserialize(doc.data(), doc.id);
+    });
+
+    posterProfile.followers.add(followerEmail.trim());
+
+    await FirebaseFirestore.instance
+      .collection(Constant.PROFILE_COLLECTION)
+      .doc(posterProfile.docId)
+      .update({MyUser.FOLLOWERS : posterProfile.followers});
+  }
+
 }
