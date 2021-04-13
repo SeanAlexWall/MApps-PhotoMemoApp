@@ -181,9 +181,14 @@ class _Controller {
       tempMemo.timestamp = DateTime.now();
       tempMemo.createdBy = state.user.email;
       tempMemo.imageLabels = imageLabels;
-      tempMemo.sharedWith.addAll(state.userProfile.followers); //shares with all followers
-      tempMemo.followers.addAll(state.userProfile.followers); //so that sharedwith can switch between follow/unfollow buttons
-
+      //shares with all followers
+      for(String follower in state.userProfile.followers){
+        tempMemo.sharedWith.add(follower);
+      }
+      //so that sharedwith can switch between follow/unfollow buttons
+      for(String follower in state.userProfile.followers){
+        tempMemo.followers.add(follower);
+      }
       String docId = await FirebaseController.addPhotoMemo(tempMemo);
       tempMemo.docId = docId;
       state.photoMemoList.insert(0, tempMemo);

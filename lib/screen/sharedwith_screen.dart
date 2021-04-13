@@ -116,6 +116,20 @@ class _SharedWithState extends State<SharedWithScreen>{
                       ),
                       onPressed: () => con.like(index),
                     ),
+                    SizedBox(width: 5.0),
+                    RaisedButton(
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.share,
+                          ),
+                          Text(
+                            "Share",
+                          )
+                        ]
+                      ),
+                      onPressed: () => print("share"),//() => con.reshare(index),
+                    ),
                   ],
                 ),
               ],
@@ -172,19 +186,23 @@ class _Controller {
         );
       }
 
-      state.photoMemoList[index].followers.add(state.user.email);
-
-      try{
-        await FirebaseController.updatePhotoMemo(
-          state.photoMemoList[index].docId,
-          {PhotoMemo.FOLLOWERS: state.photoMemoList[index].followers},
-        );
-      } catch(e){
-        MyDialog.info(
-          context: state.context,
-          title: "UpdatePhotoMemo in follow Error",
-          content: "$e",
-        );
+      for (PhotoMemo photoMemo in state.photoMemoList) {
+        if (photoMemo.createdBy == state.photoMemoList[index].createdBy) {
+          photoMemo.followers.add(state.user.email);
+          
+          try{
+            await FirebaseController.updatePhotoMemo(
+              photoMemo.docId,
+              {PhotoMemo.FOLLOWERS: photoMemo.followers},
+            );
+          } catch(e){
+            MyDialog.info(
+              context: state.context,
+              title: "UpdatePhotoMemo in follow Error",
+              content: "$e",
+            );
+          }
+        }
       }
     } catch (e) {
       MyDialog.info(
@@ -213,19 +231,23 @@ class _Controller {
         );
       }
 
-      state.photoMemoList[index].followers.removeWhere((element) => element == state.user.email);
-
-      try{
-        await FirebaseController.updatePhotoMemo(
-          state.photoMemoList[index].docId,
-          {PhotoMemo.FOLLOWERS: state.photoMemoList[index].followers},
-        );
-      } catch(e){
-        MyDialog.info(
-          context: state.context,
-          title: "UpdatePhotoMemo in unfollow Error",
-          content: "$e",
-        );
+      for (PhotoMemo photoMemo in state.photoMemoList) {
+        if (photoMemo.createdBy == state.photoMemoList[index].createdBy) {
+          photoMemo.followers.removeWhere((element) => element == state.user.email);
+          
+          try{
+            await FirebaseController.updatePhotoMemo(
+              photoMemo.docId,
+              {PhotoMemo.FOLLOWERS: photoMemo.followers},
+            );
+          } catch(e){
+            MyDialog.info(
+              context: state.context,
+              title: "UpdatePhotoMemo in follow Error",
+              content: "$e",
+            );
+          }
+        }
       }
     } catch (e) {
       MyDialog.info(
