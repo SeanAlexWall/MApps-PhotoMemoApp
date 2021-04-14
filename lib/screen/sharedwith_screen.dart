@@ -27,6 +27,8 @@ class _SharedWithState extends State<SharedWithScreen>{
   User user;
   MyUser userProfile;
   List<PhotoMemo> photoMemoList;
+  GlobalKey<FormState> shareKey = GlobalKey<FormState>();
+  List<dynamic> updatedSharedWith;
 
   @override
   void initState() {
@@ -128,10 +130,40 @@ class _SharedWithState extends State<SharedWithScreen>{
                           )
                         ]
                       ),
-                      onPressed: () => print("share"),//() => con.reshare(index),
+                      onPressed: () => con.reshare(index),
                     ),
                   ],
                 ),
+                (con.shareIndex != null && con.shareIndex == index)?
+                  Form(
+                    key: shareKey,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          flex: 5,
+                          child: TextFormField(
+                            enabled: true,
+                            style: Theme.of(context).textTheme.bodyText2,
+                            decoration: InputDecoration(
+                              hintText: "SharedWith (comma separated email list)",
+                            ),
+                            autocorrect: true,
+                            validator: PhotoMemo.validateSharedWith,
+                            onSaved: con.saveSharedWith,
+                          ),
+                        ),
+                        Expanded(
+                          flex: 2,
+                          child: FlatButton(
+                            color: Colors.green,
+                            child: Icon(Icons.send),
+                            onPressed: () => con.reshareMemo(index),
+                          ),
+                        )
+                      ],
+                    ),
+                  )
+                  :SizedBox(height: 1.0),
               ],
             ),
           ),
@@ -144,6 +176,8 @@ class _Controller {
   _SharedWithState state;
 
   _Controller(this.state);
+
+  int shareIndex;
 
   void comments(int index) async {
     MyDialog.circularProgressStart(state.context);
@@ -288,6 +322,56 @@ class _Controller {
         content: "$e",
       );
       MyDialog.circularProgressStop(state.context);
+    }
+  }
+
+  void reshare(int index){
+    print("Index: $index shareIndex: $shareIndex");
+    if(shareIndex == null) state.render(() => shareIndex = index);
+    else if(shareIndex == index) state.render(() => shareIndex = null);
+    else return;
+  }
+
+  void saveSharedWith(String value){
+    if(value.trim().length != 0){
+      state.updatedSharedWith = value
+        .split(RegExp('(,| )+'))
+        .map((e) => e.trim())
+        .toList();
+    }
+  }
+
+  void reshareMemo(int index) async{
+    if(!state.shareKey.currentState.validate()) return;
+    
+    state.shareKey.currentState.save();
+
+    if(state.updatedSharedWith.isNotEmpty){
+      for(String sharedEmail in state.updatedSharedWith){
+        state.photoMemoList[index].sharedWith.add(sharedEmail);
+      }
+      try{
+        await FirebaseController.updatePhotoMemo(
+          state.photoMemoList[index].docId,
+          {PhotoMemo.SHARED_WITH : state.photoMemoList[index].sharedWith});
+        state.shareKey.currentState.reset();
+        Fluttertoast.showToast(
+          msg: "Shared!",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+          timeInSecForIosWeb: 1,
+          backgroundColor: currentTheme.color,
+          textColor: Theme.of(state.context).textTheme.bodyText1.color,
+          fontSize: 16.0
+        );
+        state.render(() => shareIndex = null);
+      }catch (e){
+        MyDialog.info(
+          context: state.context,
+          title: "Update PhotoMemo in reshare error",
+          content: "$e",
+        );
+      }
     }
   }
 }
