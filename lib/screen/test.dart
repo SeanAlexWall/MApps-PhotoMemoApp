@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../main.dart';
 import 'myview/conifg.dart';
 
 bool light = true;

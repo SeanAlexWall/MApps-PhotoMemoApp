@@ -7,6 +7,7 @@ class MyUser {
   String appColor;
   bool darkMode = false;
   List<dynamic> followers;
+  bool isAdmin = false;
 
   MyUser(this.uid, this.email){
     this.followers = [];
@@ -20,6 +21,8 @@ class MyUser {
   static const DARK_MODE = "darkMode";
   static const FOLLOWERS = "followers";
   static const EMAIL = "email";
+  static const IS_ADMIN = "isAdmin";
+  
 
   static MyUser deserialize(Map doc, String docId){
     MyUser deserializedUser = MyUser(doc[UID], doc[EMAIL]);
@@ -29,6 +32,7 @@ class MyUser {
     deserializedUser.appColor = doc[COLOR];
     deserializedUser.darkMode = doc[DARK_MODE];
     deserializedUser.followers = doc[FOLLOWERS];
+    deserializedUser.isAdmin = doc[IS_ADMIN];
     return deserializedUser;
   }
 
@@ -42,6 +46,7 @@ class MyUser {
       DARK_MODE : this.darkMode,
       FOLLOWERS : this.followers,
       EMAIL : this.email,
+      IS_ADMIN : this.isAdmin,
     };
   }
 }

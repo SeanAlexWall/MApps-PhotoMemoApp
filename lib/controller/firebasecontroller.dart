@@ -4,7 +4,6 @@ import 'package:PhotoMemoApp/model/comment.dart';
 import 'package:PhotoMemoApp/model/constant.dart';
 import 'package:PhotoMemoApp/model/myuser.dart';
 import 'package:PhotoMemoApp/model/photomemo.dart';
-import 'package:PhotoMemoApp/screen/myview/mydialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
@@ -104,7 +103,7 @@ class FirebaseController {
     //there is not yet a userprofile for this uid
     if(querySnapshot.size == 0){
       userProfile = MyUser(uid, email);
-      userProfile.docId = await addUserProfile(userProfile);
+      userProfile.docId = await addUserProfile(userProfile, uid);
       
     }
     else if(querySnapshot.size == 1){
@@ -116,11 +115,12 @@ class FirebaseController {
     return userProfile;
   }
 
-  static Future<String> addUserProfile(MyUser userProfile) async{
-    var ref = await FirebaseFirestore.instance
+  static Future<String> addUserProfile(MyUser userProfile, String uid) async{
+    await FirebaseFirestore.instance
       .collection(Constant.PROFILE_COLLECTION)
-      .add(userProfile.serialize());
-    return ref.id;
+      .doc(uid)
+      .set(userProfile.serialize());
+    return uid;
   }
 
   static Future<void> updateUserProfile(String docId, Map<String, dynamic> updatedInfo) async{
@@ -243,4 +243,18 @@ class FirebaseController {
       .update({MyUser.FOLLOWERS : posterProfile.followers});
   }
 
+  static Future<List<MyUser>> adminGetUserList(MyUser adminProfile) async{
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+      .collection(Constant.PROFILE_COLLECTION)
+      .orderBy(MyUser.EMAIL, descending: false)
+      .get();
+
+    List<MyUser> userList = [];
+
+    querySnapshot.docs.forEach((doc) {
+      userList.add(MyUser.deserialize(doc.data(), doc.id));
+    });
+
+    return userList;
+  }
 }

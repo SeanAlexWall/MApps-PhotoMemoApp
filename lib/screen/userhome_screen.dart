@@ -4,15 +4,16 @@ import 'package:PhotoMemoApp/model/constant.dart';
 import 'package:PhotoMemoApp/model/myuser.dart';
 import 'package:PhotoMemoApp/model/photomemo.dart';
 import 'package:PhotoMemoApp/screen/addphotomemo_screen.dart';
+import 'package:PhotoMemoApp/screen/adminhome_screen.dart';
 import 'package:PhotoMemoApp/screen/comments_screen.dart';
 import 'package:PhotoMemoApp/screen/detailedview_screen.dart';
 import 'package:PhotoMemoApp/screen/myview/myImage.dart';
-import 'package:PhotoMemoApp/screen/myview/myTextTheme.dart';
 import 'package:PhotoMemoApp/screen/myview/mydialog.dart';
 import 'package:PhotoMemoApp/screen/profile_screen.dart';
 import 'package:PhotoMemoApp/screen/sharedwith_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
 
 class UserHomeScreen extends StatefulWidget{
   static const routeName = "/userHomeScreen";
@@ -113,6 +114,11 @@ class UserHomeState extends State<UserHomeScreen> {
                   },
                 ),
               ),
+              (userProfile.isAdmin)? ListTile(
+                leading: Icon(Icons.admin_panel_settings),
+                title: Text("Admin Home"),
+                onTap: con.adminHome,
+              ) : SizedBox(height: 1),
               ListTile(
                 leading: Icon(Icons.exit_to_app),
                 title: Text("Sign Out"),
@@ -357,5 +363,27 @@ class _Controller {
       );
     }  
   }//comments
+
+  void adminHome() async {
+    try{
+      List<MyUser> userList = await FirebaseController.adminGetUserList(state.userProfile); 
+      await Navigator.pushNamed(
+        state.context, 
+        AdminHomeScreen.routeName,
+        arguments: {
+          Constant.ARG_USER : state.user,
+          Constant.ARG_USER_PROFILE : state.userProfile,
+          Constant.ARG_USER_PROFILE_LIST: userList,
+        }   
+      );
+      Navigator.pop(state.context); //pops drawer
+    }catch(e){
+      MyDialog.info(
+        context: state.context,
+        title: "get shared with photomemo error",
+        content: "$e",
+      );
+    }
+  }
 
 }

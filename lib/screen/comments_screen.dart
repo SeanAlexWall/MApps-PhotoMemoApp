@@ -1,7 +1,6 @@
 import 'package:PhotoMemoApp/controller/firebasecontroller.dart';
 import 'package:PhotoMemoApp/model/comment.dart';
 import 'package:PhotoMemoApp/model/constant.dart';
-import 'package:PhotoMemoApp/model/myuser.dart';
 import 'package:PhotoMemoApp/model/photomemo.dart';
 import 'package:PhotoMemoApp/screen/myview/mydialog.dart';
 import 'package:firebase_auth/firebase_auth.dart';
