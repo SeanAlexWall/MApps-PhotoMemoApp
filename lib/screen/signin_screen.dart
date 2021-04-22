@@ -154,6 +154,22 @@ class _Controller{
       return;
     }
 
+    if(userProfile.unbanDate != null){
+      if(userProfile.unbanDate.isAfter(DateTime.now())){
+        MyDialog.circularProgressStop(state.context);
+        MyDialog.info(
+          context: state.context,
+          title: "You are banned!",
+          content: "You have been banned until " +
+            "${userProfile.unbanDate.month}/" +
+            "${userProfile.unbanDate.day}/" +
+            "${userProfile.unbanDate.year}"
+        );
+        await FirebaseController.signOut();
+        return;
+      }
+    }
+
     print(userProfile.appColor);
     if(userProfile.appColor == null) userProfile.appColor = MyAppTheme.GREEN;
     if(userProfile.darkMode == null) userProfile.darkMode = true;

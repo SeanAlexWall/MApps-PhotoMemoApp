@@ -4,7 +4,7 @@ import 'package:PhotoMemoApp/model/constant.dart';
 import 'package:PhotoMemoApp/model/myuser.dart';
 import 'package:PhotoMemoApp/model/photomemo.dart';
 import 'package:PhotoMemoApp/screen/addphotomemo_screen.dart';
-import 'package:PhotoMemoApp/screen/adminhome_screen.dart';
+import 'package:PhotoMemoApp/screen/admin/adminhome_screen.dart';
 import 'package:PhotoMemoApp/screen/comments_screen.dart';
 import 'package:PhotoMemoApp/screen/detailedview_screen.dart';
 import 'package:PhotoMemoApp/screen/myview/myImage.dart';

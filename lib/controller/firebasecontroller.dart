@@ -257,4 +257,27 @@ class FirebaseController {
 
     return userList;
   }
+
+  static Future<List<PhotoMemo>> adminGetUserPhotoMemoList(String email) async{
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+      .collection(Constant.PHOTOMEMO_COLLECTION)
+      .where(PhotoMemo.CREATED_BY, isEqualTo: email)
+      .orderBy(PhotoMemo.TIMESTAMP, descending: true)
+      .get();
+
+    List<PhotoMemo> userPhotoMemoList = [];
+
+    querySnapshot.docs.forEach((doc){
+      userPhotoMemoList.add(PhotoMemo.deserialize(doc.data(), doc.id));
+    });
+
+    return userPhotoMemoList;
+  }
+
+  static Future<void> adminRemovePhotoMemo(String docId) async {
+    await FirebaseFirestore.instance
+      .collection(Constant.PHOTOMEMO_COLLECTION)
+      .doc(docId)
+      .delete();
+  }
 }

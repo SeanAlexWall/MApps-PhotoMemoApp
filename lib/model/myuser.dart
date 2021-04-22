@@ -8,9 +8,11 @@ class MyUser {
   bool darkMode = false;
   List<dynamic> followers;
   bool isAdmin = false;
+  DateTime unbanDate;
 
   MyUser(this.uid, this.email){
     this.followers = [];
+    unbanDate = DateTime.utc(DateTime.now().year, DateTime.now().month, DateTime.now().day);
   }
 
   static const UID = "uid";
@@ -22,6 +24,7 @@ class MyUser {
   static const FOLLOWERS = "followers";
   static const EMAIL = "email";
   static const IS_ADMIN = "isAdmin";
+  static const UNBAN_DATE = "unbanDate";
   
 
   static MyUser deserialize(Map doc, String docId){
@@ -33,6 +36,8 @@ class MyUser {
     deserializedUser.darkMode = doc[DARK_MODE];
     deserializedUser.followers = doc[FOLLOWERS];
     deserializedUser.isAdmin = doc[IS_ADMIN];
+    deserializedUser.unbanDate = (doc[UNBAN_DATE] == null)? null : 
+      DateTime.fromMillisecondsSinceEpoch(doc[UNBAN_DATE].millisecondsSinceEpoch);
     return deserializedUser;
   }
 
@@ -47,6 +52,7 @@ class MyUser {
       FOLLOWERS : this.followers,
       EMAIL : this.email,
       IS_ADMIN : this.isAdmin,
+      UNBAN_DATE : this.unbanDate,
     };
   }
 }

@@ -1,6 +1,7 @@
 import 'package:PhotoMemoApp/model/constant.dart';
 import 'package:PhotoMemoApp/screen/addphotomemo_screen.dart';
-import 'package:PhotoMemoApp/screen/adminhome_screen.dart';
+import 'package:PhotoMemoApp/screen/admin/adminhome_screen.dart';
+import 'package:PhotoMemoApp/screen/admin/userdetails_screen.dart';
 import 'package:PhotoMemoApp/screen/comments_screen.dart';
 import 'package:PhotoMemoApp/screen/detailedview_screen.dart';
 import 'package:PhotoMemoApp/screen/myview/conifg.dart';
@@ -60,6 +61,7 @@ class AppState extends State<PhotoMemoApp> {
         ProfileScreen.routeName : (context) => ProfileScreen(),
         TestScreen.routeName : (context) => TestScreen(),
         AdminHomeScreen.routeName : (conext) => AdminHomeScreen(),
+        UserDetailsScreen.routeName : (context) => UserDetailsScreen(), 
       },
     );
   }

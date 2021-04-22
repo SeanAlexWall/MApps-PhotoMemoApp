@@ -24,6 +24,6 @@ class Constant {
 
   static const PROFILE_COLLECTION = "userProfiles";
   static const ARG_USER_PROFILE = "user_profile";
-
   static const ARG_USER_PROFILE_LIST = "user_profile_list";
+  static const ARG_ONE_USER_PROFILE = "one_user_profile";
 }
